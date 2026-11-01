@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4 text-center">Поиск данных</h2>
+
+<ul class="nav nav-tabs mb-4 justify-content-center">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#sync">Синхронизированный поиск (2 атрибута)</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#single">Поиск по объединению (1 атрибут)</a></li>
+</ul>
+
+<div class="tab-content">
+    <!-- ПОИСК ПО 2 АТРИБУТАМ -->
+    <div class="tab-pane fade show active" id="sync">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body bg-light">
+                <form method="GET">
+                    <div class="row align-items-end">
+                        <div class="col-md-5 mb-3">
+                            <label class="fw-bold">1. Направление</label>
+                            <!-- При выборе направления форма отправляется сама -->
+                            <select name="direction_id" class="form-select border-primary" onchange="this.form.submit()">
+                                <option value="">-- Выберите --</option>
+                                {% for d in directions %}
+                                <option value="{{ d.classifier_id }}" {% if selected_dir == d.classifier_id|string %}selected{% endif %}>{{ d.classifier_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label class="fw-bold">2. Объединение</label>
+                            <select name="club_id" class="form-select border-success" {% if not selected_dir %}disabled{% endif %}>
+                                <option value="">-- Выберите --</option>
+                                {% for c in clubs %}
+                                <option value="{{ c.club_id }}" {% if selected_club == c.club_id|string %}selected{% endif %}>{{ c.club_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <button type="submit" class="btn btn-primary w-100">Найти</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПОИСК ПО 1 АТРИБУТУ -->
+    <div class="tab-pane fade" id="single">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body bg-light">
+                <form method="GET">
+                    <div class="row align-items-end">
+                        <div class="col-md-10 mb-3">
+                            <label class="fw-bold">Выберите объединение</label>
+                            <select name="single_club_id" class="form-select border-warning" required>
+                                <option value="">-- Выберите --</option>
+                                {% for c in all_clubs %}
+                                <option value="{{ c.club_id }}" {% if single_club_id == c.club_id|string %}selected{% endif %}>{{ c.club_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <button type="submit" class="btn btn-warning w-100">Найти</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ВЫВОД РЕЗУЛЬТАТОВ -->
+{% set display_results = results if results else single_result %}
+{% if display_results %}
+    <h4 class="text-success mb-3">Результаты:</h4>
+    {% for club in display_results %}
+        <div class="card shadow-sm border-success mb-3">
+            <div class="card-header bg-success text-white"><h5 class="mb-0">{{ club.club_name }}</h5></div>
+            <div class="card-body">
+                <p><strong>Направление:</strong> {{ club.direction_name }}</p>
+                <p><strong>Город:</strong> {{ club.city }}</p>
+                <p><strong>Адрес:</strong> {{ club.address }}</p>
+                <p><strong>Телефон:</strong> {{ club.phone }}</p>
+            </div>
+        </div>
+    {% endfor %}
+{% elif selected_dir or single_club_id %}
+    <div class="alert alert-warning text-center">Ничего не найдено.</div>
+{% endif %}
+{% endblock %}
